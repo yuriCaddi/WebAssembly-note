@@ -30,11 +30,14 @@ EMSCRIPTEN_BINDINGS(my_module) {
 ## コンパイル
 
 ```
-emcc --bind -o quick_example.js quick_example.cpp
+emcc --emrun --bind -o quick_example.js quick_example.cpp
 ```
 
 ```quick_example.js``` で、グルーコードの名前を指定できる。  
-```quick_example.cpp``` には、アプリケーションのコードを指定する。
+```quick_example.cpp``` には、アプリケーションのコードを指定する。  
+
+```--emrun```をつけるのは、じっこうするときに ```emrun``` コマンドを使うってだけ。  
+セキュリティの関係？で、ただただ ```html``` 開いても、実行できない。
 
 ## 呼び出し
 
@@ -50,6 +53,12 @@ emcc --bind -o quick_example.js quick_example.cpp
   </script>
   <script src="quick_example.js"></script>
 </html>
+```
+これを、 ```sample.html``` とする。
+
+## 実行
+```
+emrun sample.html
 ```
 
 # なにをしているの？
