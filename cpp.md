@@ -57,9 +57,17 @@ emcc --emrun --bind -o quick_example.js quick_example.cpp
 これを、 ```sample.html``` とする。
 
 ## 実行
+
 ```
 emrun sample.html
 ```
+
+## 参考
+
+だいたい、[ここ](https://emscripten.org/docs/porting/connecting_cpp_and_javascript/embind.html#a-quick-example)に書いてある流れと同じ。  
+```emrun``` についての記述のみ、[こっち](https://emscripten.org/docs/compiling/Running-html-files-with-emrun.html#running-html-files-with-emrun)に書いてある。(私は読んでない)  
+
+
 
 # なにをしているの？
 

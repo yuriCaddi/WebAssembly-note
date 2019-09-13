@@ -25,3 +25,8 @@ WebAssemblyについて調べたことを、それっぽくまとめたところ
 ちなみに、ここに書いてある方法だと、C++のコードを動かすことはできない。
 
 長くなりそうなので、別にまとめた。　[cpp](/cpp.md)
+
+# 対応ブラウザ
+
+IE以外、だいたい全部対応している。  
+[ブラウザの実装状況](https://developer.mozilla.org/ja/docs/WebAssembly#Browser_compatibility)
