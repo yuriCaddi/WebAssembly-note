@@ -1,6 +1,8 @@
-# C++でWebAssembly
 
-# 大まかな流れだけ
+# 使い方
+
+詳しく知りたい人へ -> [Embind](https://emscripten.org/docs/porting/connecting_cpp_and_javascript/embind.html#)  
+よくつかいそうなところだけまとめ。
 
 ## インストール
 
@@ -8,24 +10,46 @@
 aptにもemscriptenが存在するらしいけど、上手く動作しないって色々なところに書いてあった。(試してないけど)  
 このインストール方法だと、起動毎にスクリプトを走らせる必要があるので、どうにかすべき。
 
+
+```
+git clone https://github.com/juj/emsdk.git
+cd emsdk
+
+# on Linux or Mac OS X
+./emsdk install --build=Release sdk-incoming-64bit binaryen-master-64bit
+./emsdk activate --global --build=Release sdk-incoming-64bit binaryen-master-64bit
+```
+```emsdk``` ディレクトリ内で次のコマンドを入力
+```
+# on Linux or Mac OS X
+source ./emsdk_env.sh
+```
+
 ## C++ソースの作成
 
 ```cpp
 // quick_example.cpp
+#include <iostream>
+#include <string>
 #include <emscripten/bind.h>
-
 using namespace emscripten;
 
-float lerp(float a, float b, float t) {
-    return (1 - t) * a + t * b;
+std::string Hello() {
+    return("Hello world from C++");
+}
+
+int Add(int a, int b) {
+    return(a + b);
 }
 
 EMSCRIPTEN_BINDINGS(my_module) {
-    function("lerp", &lerp);
+    function("c_hello", &Hello);
+    function("c_add", &Add);
 }
 ```
 
-```EMSCRIPTEN_BINDINGS``` ブロックの中で、 ```JavaScript``` に ```lerp() function()``` を公開する。
+```EMSCRIPTEN_BINDINGS``` ブロックの中で、 ```Hello()``` と ```Add()``` をエクスポートする。  
+```""``` の中で、 ```JavaScript``` からの呼び出しに使う名前を決めることができる。
 
 ## コンパイル
 
@@ -44,17 +68,21 @@ emcc --emrun --bind -o quick_example.js quick_example.cpp
 ```html
 <!doctype html>
 <html>
-  <script>
-    var Module = {
-      onRuntimeInitialized: function() {
-        console.log('lerp result: ' + Module.lerp(1, 2, 0.5));
-      }
-    };
-  </script>
-  <script src="quick_example.js"></script>
+<script>
+  var Module = {
+    onRuntimeInitialized: function () {
+      console.log(Module.c_hello())
+      console.log('hello result:' + Module.c_add(10, 1));
+    }
+  };
+</script>
+<script src="quick_example.js"></script>
 </html>
 ```
 これを、 ```sample.html``` とする。
+
+```Module``` オブジェクトで使用可能できる。  
+引数も、普通に持たせることができる。
 
 ## 実行
 
@@ -64,22 +92,18 @@ emrun sample.html
 
 ## 参考
 
-だいたい、[ここ](https://emscripten.org/docs/porting/connecting_cpp_and_javascript/embind.html#a-quick-example)に書いてある流れと同じ。  
-```emrun``` についての記述のみ、[こっち](https://emscripten.org/docs/compiling/Running-html-files-with-emrun.html#running-html-files-with-emrun)に書いてある。(私は読んでない)  
+[Embind - A quick example](https://emscripten.org/docs/porting/connecting_cpp_and_javascript/embind.html#a-quick-example)  
+[Running HTML files with emrun](https://emscripten.org/docs/compiling/Running-html-files-with-emrun.html#running-html-files-with-emrun)
 
 
+# 構造体・スマートポインタ
 
-# なにをしているの？
+多分使えるけど、多少の決まり事があるっぽい？
 
-## あらかじめ
+## 参考
+[Embind - Value types](https://emscripten.org/docs/porting/connecting_cpp_and_javascript/embind.html#value-types)
 
-調べて書いてるつもりだけど、間違っている可能性が有ります。
-
-## ながれ
-
-1. 
-
-## 注意
+# 注意
 
 - 対応しているC++のバージョンが、C++11とC++14だけ。
 - 生ポインタを扱う際、```allow_raw_pointers```でマークする必要がある。
