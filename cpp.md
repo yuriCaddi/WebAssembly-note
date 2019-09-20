@@ -2,7 +2,7 @@
 # 使い方
 
 詳しく知りたい人へ -> [Embind](https://emscripten.org/docs/porting/connecting_cpp_and_javascript/embind.html#)  
-よくつかいそうなところだけまとめ。
+よくつかいそうなところだけまとめ。実質防備録なので、自分が使う場合のやり方しかかいてない。
 
 ## インストール
 
@@ -71,8 +71,8 @@ emcc --emrun --bind -o quick_example.js quick_example.cpp
 <script>
   var Module = {
     onRuntimeInitialized: function () {
-      console.log(Module.c_hello())
-      console.log('hello result:' + Module.c_add(10, 1));
+      console.log(Module.c_hello()) // Hello world from C++
+      console.log('hello result:' + Module.c_add(10, 1)); // 11
     }
   };
 </script>
@@ -95,6 +95,80 @@ emrun sample.html
 [Embind - A quick example](https://emscripten.org/docs/porting/connecting_cpp_and_javascript/embind.html#a-quick-example)  
 [Running HTML files with emrun](https://emscripten.org/docs/compiling/Running-html-files-with-emrun.html#running-html-files-with-emrun)
 
+# クラス
+
+```cpp
+class MyClass {
+public:
+  MyClass(int x, std::string y)
+    : x(x)
+    , y(y)
+  {}
+
+  void incrementX() {
+    ++x;
+  }
+
+  int getX() const { return x; }
+  void setX(int x_) { x = x_; }
+
+  static std::string getStringFromInstance(const MyClass& instance) {
+    return instance.y;
+  }
+
+private:
+  int x;
+  std::string y;
+};
+
+// Binding code
+EMSCRIPTEN_BINDINGS(my_class_example) {
+  class_<MyClass>("MyClass")
+    .constructor<int, std::string>()
+    .function("incrementX", &MyClass::incrementX)
+    .property("x", &MyClass::getX, &MyClass::setX)
+    .class_function("getStringFromInstance", &MyClass::getStringFromInstance)
+    ;
+}
+```
+
+クラスをエクスポートする場合、まず ```class_``` にクラス名をもたせて、宣言する。
+
+関数をエクスポートするには、下の関数がある。
+
+- constructor()  
+  コンストラクタをエクスポートするときに使う。
+- function()  
+  メンバ関数をエクスポートするときに使う。
+- class_function()  
+  静的メンバ関数をエクスポートするときに使う。
+- property()
+  バインディングを定義する。
+
+```html
+<script>
+  var Module = {
+    onRuntimeInitialized: function () {
+      var instance = new Module.MyClass(10, "hello");
+      /***************
+       * x = 10
+       * s = "hello"
+       ***************/
+
+      instance.incrementX(); // x++
+      console.log("instance.x :" + instance.x); // 11
+
+      instance.x = 20;
+      console.log("instance.x :" + instance.x); // 20
+
+      console.log(Module.MyClass.getStringFromInstance(instance)); // hello
+
+      instance.delete();
+    }
+  };
+</script>
+<script src="quick_example.js"></script>
+```
 
 # 構造体・スマートポインタ
 
@@ -107,3 +181,7 @@ emrun sample.html
 
 - 対応しているC++のバージョンが、C++11とC++14だけ。
 - 生ポインタを扱う際、```allow_raw_pointers```でマークする必要がある。
+
+# サンプル
+
+[それっぽいもの](https://github.com/yuriCaddi/wasm-cpp-sample)
